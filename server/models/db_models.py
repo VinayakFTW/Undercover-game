@@ -7,7 +7,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from config.db import BASE
+from server.config.db import BASE
 from server.constants.db_enums import SessionStatus
 
 # Association table for the Many-to-Many relationship between Rounds and Players

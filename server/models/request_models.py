@@ -5,6 +5,9 @@ class CandidateRegisterRequest(BaseModel):
     candidate_id: str
     name: str
     
+class CreatePlayerRequest(BaseModel):
+    player_id: str
+    name: str
 
 class TeamRegisterRequest(BaseModel):
     team_name: str
@@ -51,5 +54,6 @@ class LifelineUseRequest(BaseModel):
 
 class CandidateSpeechRequest(BaseModel):
     round_id: str
+    session_id: str
     candidate_id: str = Field(..., description="Candidate identifier: A, B, C, or D")
     text: str = Field(..., max_length=1000, description="Typed text from human or AI candidate")

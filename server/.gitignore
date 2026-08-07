@@ -1,2 +1,5 @@
 .env
 /__pycache__/
+#ignore all occurences of pycache folders
+**/*.pyc
+**/__pycache__/**/*

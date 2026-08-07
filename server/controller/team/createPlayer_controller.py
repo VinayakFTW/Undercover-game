@@ -2,12 +2,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 from server.config.db import SessionLocal
 from server.models.db_models import Player
-
-
-class CreatePlayerRequest(BaseModel):
-    player_id: str
-    name: str
-
+from server.models.request_models import CreatePlayerRequest
 
 def create_player(request: CreatePlayerRequest):
     with SessionLocal() as db:
