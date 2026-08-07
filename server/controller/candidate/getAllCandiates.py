@@ -1,5 +1,4 @@
-from fastapi import HTTPException
-from config.db import SessionLocal
+from server.config.db import SessionLocal
 from server.models.db_models import Candidate
 
 
