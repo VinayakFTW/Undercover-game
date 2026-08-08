@@ -29,18 +29,24 @@ async def generate_candidate_speech(request: CandidateSpeechRequest):
     """
     session_voices = session_voice_map.get(request.session_id)
     if not session_voices:
-        raise HTTPException(
-            status_code=404, 
-            detail="Session voice map not initialized. Call /api/session/{session_id}/init first."
-        )
+        # Auto-initialize session voices to prevent 404
+        session_voices = tts_service.randomize_session_voices()
+        session_voice_map[request.session_id] = session_voices
 
     speaker_embedding = session_voices.get(request.candidate_id)
     if speaker_embedding is None:
-        raise HTTPException(status_code=400, detail="Invalid candidate identifier.")
+        # Fallback to random voice if candidate ID is unconventional
+        import random
+        speaker_embedding = random.choice(list(session_voices.values()))
+
+    # Truncate text to avoid SpeechT5 600 char limit (which causes 400 Bad Request)
+    text_to_speak = request.text
+    if len(text_to_speak) > 600:
+        text_to_speak = text_to_speak[:597] + "..."
 
     # 3. Generate the audio
     try:
-        audio_bytes = await tts_service.generate_speech(request.text, speaker_embedding)
+        audio_bytes = await tts_service.generate_speech(text_to_speak, speaker_embedding)
         return Response(content=audio_bytes, media_type="audio/wav")
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

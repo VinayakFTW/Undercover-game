@@ -29,7 +29,16 @@ def get_all_teams():
             "teams": team_list
         }
 
-def edit_team(team_id: str, updated_data: dict):
+from pydantic import BaseModel
+from typing import Optional
+
+class TeamEditRequest(BaseModel):
+    session_id: Optional[str] = None
+    team_name: Optional[str] = None
+    branch: Optional[str] = None
+    coins: Optional[int] = None
+
+def edit_team(team_id: str, updated_data: TeamEditRequest):
     """
     Controller to edit a team's details by their ID.
     """
@@ -40,7 +49,8 @@ def edit_team(team_id: str, updated_data: dict):
             raise HTTPException(status_code=404, detail="Team not found.")
         
         # Update the team's attributes based on the provided data
-        for key, value in updated_data.items():
+        update_dict = updated_data.model_dump(exclude_unset=True)
+        for key, value in update_dict.items():
             if hasattr(team, key):
                 setattr(team, key, value)
         

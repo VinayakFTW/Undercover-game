@@ -121,7 +121,7 @@ async function autoSetup(root: HTMLElement) {
 
 (window as any).fetchAllTeams = async () => {
   try {
-    const res = await fetch(`${API_BASE}/api/host/teams`);
+    const res = await fetch(`${API_BASE}/api/host/teams`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       const teamsList = document.getElementById('teams-list-display');
@@ -217,7 +217,13 @@ async function autoSetup(root: HTMLElement) {
   }
 };
 
-(window as any).playTTS = async (candidateId: string, text: string) => {
+(window as any).playTTS = async (candidateId: string) => {
+  const text = (window as any).candidateResponses?.[candidateId] || '';
+  if (!text || !text.trim()) {
+    alert("Cannot play audio: Candidate response is empty.");
+    return;
+  }
+  
   const sessionId = (window as any).currentActiveSession;
   const roundId = (window as any).currentActiveRound || "R1"; // Fallback
   
@@ -253,7 +259,7 @@ function attachHostEvents() {
     if (!sessionId) return;
     
     try {
-      const res = await fetch(`${API_BASE}/api/session/${sessionId}/state`);
+      const res = await fetch(`${API_BASE}/api/session/${sessionId}/state`, { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         const statusDisplay = root.querySelector('#session-status-display');
@@ -272,17 +278,21 @@ function attachHostEvents() {
         const respDisplay = root.querySelector('#candidate-responses-display');
         if (respDisplay && data.candidates) {
           const cands = data.candidates;
+          (window as any).candidateResponses = {};
           if (cands.length === 0) {
              respDisplay.innerHTML = `<p>No candidates registered yet.</p>`;
           } else {
-             respDisplay.innerHTML = cands.map((cand: any) => `
-               <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; position: relative;">
-                 ${cand.ai ? '<span style="position: absolute; top: 1rem; right: 1rem; background: var(--color-accent); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">AI</span>' : ''}
-                 <h3 style="color: var(--color-accent);">Candidate ${cand.id}</h3>
-                 <p style="margin-bottom: 1rem; font-family: var(--font-body);">${cand.response || ''}</p>
-                 <button class="host-btn" onclick="playTTS('${cand.id}', \`${(cand.response || '').replace(/\`/g, '')}\`)">Play Audio</button>
-               </div>
-             `).join('');
+             respDisplay.innerHTML = cands.map((cand: any) => {
+               (window as any).candidateResponses[cand.id] = cand.response || '';
+               return `
+                 <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; position: relative;">
+                   ${cand.ai ? '<span style="position: absolute; top: 1rem; right: 1rem; background: var(--color-accent); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">AI</span>' : ''}
+                   <h3 style="color: var(--color-accent);">Candidate ${cand.id}</h3>
+                   <p style="margin-bottom: 1rem; font-family: var(--font-body); white-space: pre-wrap;">${cand.response || ''}</p>
+                   <button class="host-btn" onclick="playTTS('${cand.id}')">Play Audio</button>
+                 </div>
+               `;
+             }).join('');
           }
         } else if (respDisplay) {
           respDisplay.innerHTML = `<p>No active round or no answers.</p>`;

@@ -34,8 +34,8 @@ export function initPlayerApp(root: HTMLElement) {
         <h1 class="headline" style="font-size: 5rem; color: var(--color-accent); margin-bottom: 2rem;">JOIN SESSION</h1>
         <div style="background: rgba(0,0,0,0.5); padding: 3rem; border-radius: 12px; display: flex; flex-direction: column; gap: 1.5rem; width: 400px; max-width: 90%;">
           <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-            <label style="color: var(--color-text-secondary); font-family: var(--font-heading);">Team ID</label>
-            <input type="text" id="login-team-id" placeholder="e.g. team_12345678" style="padding: 1rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; font-family: var(--font-body); font-size: 1.2rem;">
+            <label style="color: var(--color-text-secondary); font-family: var(--font-heading);">Team Name</label>
+            <input type="text" id="login-team-id" placeholder="e.g. My Awesome Team" style="padding: 1rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; font-family: var(--font-body); font-size: 1.2rem;">
             <input type="hidden" id="login-session-id" value="DEFAULT_SESSION">
           </div>
           <button id="btn-join-session" style="background: var(--color-accent); color: white; border: none; padding: 1rem; border-radius: 6px; font-family: var(--font-heading); font-size: 1.5rem; cursor: pointer; margin-top: 1rem; transition: transform 0.2s;">Join Game</button>
@@ -48,23 +48,47 @@ export function initPlayerApp(root: HTMLElement) {
       const tId = (document.getElementById('login-team-id') as HTMLInputElement).value.trim();
       
       if (!tId) {
-        alert("Please enter a Team ID");
+        alert("Please enter a Team Name");
         return;
       }
       
-      state.sessionId = sId;
-      state.teamId = tId;
-      state.status = 'loading';
-      
-      // Let's verify session exists
-      fetch(`${API_BASE}/api/session/${sId}/state`).then(res => {
+      const btn = document.getElementById('btn-join-session') as HTMLButtonElement;
+      btn.disabled = true;
+      btn.innerText = "Joining...";
+
+      // Register the team first
+      fetch(`${API_BASE}/api/team/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ team_name: tId })
+      })
+      .then(res => {
+        if (!res.ok) throw new Error("Failed to register team");
+        return res.json();
+      })
+      .then(teamData => {
+        state.sessionId = sId;
+        state.teamId = teamData.team.team_id; // Use the generated team_id
+        state.status = 'loading';
+        
+        // Now verify session exists
+        return fetch(`${API_BASE}/api/session/${sId}/state`);
+      })
+      .then(res => {
          if(res.ok) {
            startPolling();
            renderWaiting();
          } else {
            alert("Session not found or invalid!");
+           btn.disabled = false;
+           btn.innerText = "Join Game";
          }
-      }).catch(() => alert("Network error"));
+      })
+      .catch(err => {
+        alert(err.message || "Network error");
+        btn.disabled = false;
+        btn.innerText = "Join Game";
+      });
     });
   };
 
