@@ -1,0 +1,41 @@
+.candidate-container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.candidate-header {
+  margin-bottom: 2rem;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 1rem;
+}
+
+.candidate-card {
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+.candidate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.candidate-btn {
+  background: var(--color-accent);
+  color: white;
+  border: none;
+  padding: 1rem;
+  border-radius: 6px;
+  font-family: var(--font-heading);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-top: 1rem;
+}
+
+.candidate-btn:hover {
+  background: #A01830;
+  transform: translateY(-2px);
+}

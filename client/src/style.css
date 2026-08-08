@@ -1,0 +1,137 @@
+:root {
+  --color-bg: #0A0A0A;
+  --color-accent: #C41E3A;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #B0B0B0;
+  --color-card-bg: rgba(255, 255, 255, 0.05); /* Slight transparency on pure black looks better for cards, but prompt says "Primary Text/Card Backgrounds: White (#FFFFFF)". Let's use #FFFFFF for card backgrounds, but on a #0A0A0A bg, white cards will be extremely high contrast. Let's make them slightly glassmorphic or solid white with black text. I'll use pure white with black text for cards if they are meant to pop. The prompt says "Primary Text/Card Backgrounds: White (#FFFFFF)". Let's use #FFFFFF for text and card backgrounds? Wait, white text on white card is invisible. So cards should be #FFFFFF with black text, or primary text is white and cards are white? It probably means "Primary Text: White, Card Backgrounds: White" with dark text inside, or maybe card backgrounds are dark with white text? Let's use glassmorphism with white borders/text instead to keep it premium, or dark grey cards. Let's strictly follow #FFFFFF for cards but use dark text inside them. */
+  --color-card-bg-white: #FFFFFF;
+  --color-card-text: #0A0A0A;
+  
+  --font-heading: 'Bebas Neue', 'Oswald', sans-serif;
+  --font-body: 'Montserrat', sans-serif;
+  
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6, .headline, .label {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: normal; /* Bebas Neue is only available in one weight usually */
+}
+
+h1 {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+h2 {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+}
+
+h3 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+button {
+  font-family: var(--font-heading);
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  background: var(--color-accent);
+  color: var(--color-text-primary);
+  padding: 1rem 2rem;
+  font-size: 1.5rem;
+  border-radius: 4px;
+  transition: all var(--transition-fast);
+  box-shadow: 0 4px 15px rgba(196, 30, 58, 0.3);
+}
+
+button:hover {
+  background: #A01830;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(196, 30, 58, 0.5);
+}
+
+button:disabled {
+  background: var(--color-text-secondary);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.card {
+  background: var(--color-card-bg-white);
+  color: var(--color-card-text);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Glassmorphism utility if needed */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-text-primary);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg); 
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-text-secondary); 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-primary); 
+}
+
+/* Layout utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  width: 100%;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* App container */
+#app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
