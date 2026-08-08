@@ -18,10 +18,11 @@ def update_session(request: sessionUpdateRequest):
             
             # Auto-create the round if it doesn't exist
             round_id = request.status.value
-            existing_round = db.query(Round).filter(Round.round_id == round_id, Round.session_id == request.session_id).first()
+            unique_round_id = f"{request.session_id}_{round_id}"
+            existing_round = db.query(Round).filter(Round.round_id == unique_round_id, Round.session_id == request.session_id).first()
             if not existing_round:
                 new_round = Round(
-                    round_id=round_id,
+                    round_id=unique_round_id,
                     session_id=request.session_id,
                     multiplier=1.0,
                     bounty_phrase=""

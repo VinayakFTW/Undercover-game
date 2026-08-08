@@ -19,7 +19,6 @@ from server.controller.host.delete_candidate_controller import delete_candidate
 from server.controller.host.delete_team_controller import delete_team
 from server.controller.host.team_management_controller import get_all_teams, edit_team
 from server.controller.session.create_session_controller import create_session
-from server.controller.candidate.submit_answer_controller import submit_candidate_answer
 from server.controller.session.update_session_controller import update_session
 from server.controller.session.get_session_state_controller import get_session_state
 from server.controller.candidate.generate_ai_response_controller import generate_ai_response
@@ -57,7 +56,6 @@ add_to_route("/api/host/delete_team/{team_id}", delete_team, methods=["DELETE"])
 add_to_route("/api/host/teams", get_all_teams, methods=["GET"])
 add_to_route("/api/host/edit_team/{team_id}", edit_team, methods=["PUT"])
 add_to_route("/api/session/create", create_session, methods=["POST"])
-add_to_route("/api/candidate/answer", submit_candidate_answer, methods=["POST"])
 add_to_route("/api/candidate/generate", generate_ai_response, methods=["POST"])
 add_to_route("/api/session/update_status", update_session, methods=["POST"])
 add_to_route("/api/session/{session_id}/state", get_session_state, methods=["GET"])

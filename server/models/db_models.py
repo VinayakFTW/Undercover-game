@@ -66,7 +66,7 @@ class Candidate(BASE):
     __tablename__ = "candidates"
 
     candidate_id: Mapped[str] = mapped_column(String, primary_key=True)
-    name: Mapped[str] = mapped_column(String)
+    response: Mapped[str] = mapped_column(String)
     ai: Mapped[bool] = mapped_column(Boolean, default=False)
     # Relationships
     sessions: Mapped[List["Session"]] = relationship(

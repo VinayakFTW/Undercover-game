@@ -42,7 +42,7 @@ export function initHostApp(root: HTMLElement) {
 
         <!-- Candidate Answers and TTS -->
         <div class="host-card" style="grid-column: 1 / -1;">
-          <h2>Candidate Responses (Current Round)</h2>
+          <h2>Candidate Responses</h2>
           <div id="candidate-responses-display" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
              <p style="color: var(--color-text-secondary);">Loading answers...</p>
           </div>
@@ -66,25 +66,17 @@ export function initHostApp(root: HTMLElement) {
 }
 
 async function autoSetup(root: HTMLElement) {
-  // Try to create the default session and candidates silently
   try {
-    const cands = ['A', 'B', 'C', 'D'];
-    for (const c of cands) {
-      await fetch(`${API_BASE}/api/candidate/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ candidate_id: c, name: `Candidate ${c}` })
-      }).catch(() => {});
-    }
-    
+    // Try to create the default session silently
     await fetch(`${API_BASE}/api/session/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ session_id: 'DEFAULT_SESSION', team_id: 'DUMMY_TEAM' })
     }).catch(() => {});
-    
-  } catch (e) {}
-
+  } catch (err) {
+    // Ignore
+  }
+  
   (window as any).currentActiveSession = 'DEFAULT_SESSION';
   
   // Auto poll the session status every 2 seconds
@@ -278,16 +270,17 @@ function attachHostEvents() {
         }
 
         const respDisplay = root.querySelector('#candidate-responses-display');
-        if (respDisplay && data.current_round && data.current_round.candidate_answers) {
-          const answers = data.current_round.candidate_answers;
-          if (Object.keys(answers).length === 0) {
-             respDisplay.innerHTML = `<p>No answers submitted yet.</p>`;
+        if (respDisplay && data.candidates) {
+          const cands = data.candidates;
+          if (cands.length === 0) {
+             respDisplay.innerHTML = `<p>No candidates registered yet.</p>`;
           } else {
-             respDisplay.innerHTML = Object.keys(answers).map(candId => `
-               <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px;">
-                 <h3 style="color: var(--color-accent);">Candidate ${candId}</h3>
-                 <p style="margin-bottom: 1rem; font-family: var(--font-body);">${answers[candId]}</p>
-                 <button class="host-btn" onclick="playTTS('${candId}', \`${answers[candId].replace(/\`/g, '')}\`)">Play Audio</button>
+             respDisplay.innerHTML = cands.map((cand: any) => `
+               <div style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; position: relative;">
+                 ${cand.ai ? '<span style="position: absolute; top: 1rem; right: 1rem; background: var(--color-accent); color: white; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: bold;">AI</span>' : ''}
+                 <h3 style="color: var(--color-accent);">Candidate ${cand.id}</h3>
+                 <p style="margin-bottom: 1rem; font-family: var(--font-body);">${cand.response || ''}</p>
+                 <button class="host-btn" onclick="playTTS('${cand.id}', \`${(cand.response || '').replace(/\`/g, '')}\`)">Play Audio</button>
                </div>
              `).join('');
           }

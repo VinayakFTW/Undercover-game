@@ -20,12 +20,12 @@ def get_session_state(session_id: str):
             if len(rounds) >= int(round_num):
                 round_obj = rounds[int(round_num) - 1]
 
-        candidates = session_obj.candidates
+        all_candidates = db.query(Candidate).all()
 
         return {
             "status": session_obj.status,
             "current_round_start_time": session_obj.current_round_start_time,
-            "candidates": [{"id": c.candidate_id, "name": c.name, "ai": c.ai} for c in candidates],
+            "candidates": [{"id": c.candidate_id, "response": c.response, "ai": c.ai} for c in all_candidates],
             "current_round": {
                 "round_id": round_obj.round_id if round_obj else None,
                 "candidate_answers": round_obj.candidate_answers if round_obj else {},

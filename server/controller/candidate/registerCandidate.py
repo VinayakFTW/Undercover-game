@@ -3,8 +3,16 @@ from pydantic import BaseModel
 from server.config.db import SessionLocal
 from server.models.db_models import Candidate
 from server.models.request_models import CandidateRegisterRequest
+from server.utils.ai_utils import generate_ai_candidate_response
 
-def register_candidate(request: CandidateRegisterRequest):
+async def register_candidate(request: CandidateRegisterRequest):
+    response_text = request.response
+    is_ai = request.ai
+
+    if request.prompt:
+        response_text = await generate_ai_candidate_response(prompt=request.prompt, conversation_history=[])
+        is_ai = True
+
     with SessionLocal() as db:
         existing = (
             db.query(Candidate)
@@ -12,14 +20,15 @@ def register_candidate(request: CandidateRegisterRequest):
             .first()
         )
         if existing:
-            raise HTTPException(
-                status_code=400, detail="Candidate ID already exists."
+            existing.response = response_text
+            existing.ai = is_ai
+            new_candidate = existing
+        else:
+            new_candidate = Candidate(
+                candidate_id=request.candidate_id, response=response_text, ai=is_ai
             )
-
-        new_candidate = Candidate(
-            candidate_id=request.candidate_id, name=request.name, ai=request.ai
-        )
-        db.add(new_candidate)
+            db.add(new_candidate)
+            
         db.commit()
         db.refresh(new_candidate)
 
@@ -28,7 +37,7 @@ def register_candidate(request: CandidateRegisterRequest):
             "message": "Candidate registered successfully",
             "candidate": {
                 "candidate_id": new_candidate.candidate_id,
-                "name": new_candidate.name,
+                "response": new_candidate.response,
                 "ai": new_candidate.ai,
             },
         }

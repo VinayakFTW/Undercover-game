@@ -4,8 +4,9 @@ from server.constants.db_enums import SessionStatus
 
 class CandidateRegisterRequest(BaseModel):
     candidate_id: str
-    name: str
     ai: Optional[bool] = False
+    response: Optional[str] = None
+    prompt: Optional[str] = None
     
 class CreatePlayerRequest(BaseModel):
     player_id: str
