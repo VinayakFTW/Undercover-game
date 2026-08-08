@@ -14,7 +14,15 @@ def check_bounty(request: RoundBountyRequest):
 
         team = db.query(Team).filter(Team.team_id == request.team_id).first()
         if not team:
-            raise HTTPException(status_code=404, detail="Team not found.")
+            team = Team(
+                team_id=request.team_id,
+                session_id='DEFAULT_SESSION',
+                team_name=request.team_id,
+                branch="Default"
+            )
+            db.add(team)
+            db.commit()
+            db.refresh(team)
 
         # Check if phrase matches bounty phrase
         is_triggered = (

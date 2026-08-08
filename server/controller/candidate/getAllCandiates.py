@@ -11,6 +11,7 @@ def get_all_candidates():
                 {
                     "candidate_id": candidate.candidate_id,
                     "name": candidate.name,
+                    "ai": candidate.ai,
                 }
                 for candidate in candidates
             ],

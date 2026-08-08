@@ -1,9 +1,11 @@
 from pydantic import BaseModel, Field, field_validator
-from typing import List
+from typing import List, Optional
+from server.constants.db_enums import SessionStatus
 
 class CandidateRegisterRequest(BaseModel):
     candidate_id: str
     name: str
+    ai: Optional[bool] = False
     
 class CreatePlayerRequest(BaseModel):
     player_id: str
@@ -11,12 +13,23 @@ class CreatePlayerRequest(BaseModel):
 
 class TeamRegisterRequest(BaseModel):
     team_name: str
-    branch: str
-    session_id: str
 
+class SessionCreateRequest(BaseModel):
+    session_id: Optional[str] = None
+    status: SessionStatus = SessionStatus.WAITING
+
+class sessionUpdateRequest(BaseModel):
+    session_id: str
+    status: SessionStatus
 class SessionJoinRequest(BaseModel):
     session_id: str
     team_id: str
+
+class RoundCreateRequest(BaseModel):
+    round_id: str
+    session_id: str
+    multiplier: float
+    bounty_phrase: str
 
 class StakeAllocation(BaseModel):
     candidate_id: str = Field(..., description="Candidate identifier (matches Candidate.candidate_id)")
@@ -48,12 +61,20 @@ class RoundBountyRequest(BaseModel):
     candidate_id: str
     triggered_phrase: str
 
-class LifelineUseRequest(BaseModel):
-    team_id: str
-    lifeline_type: str = Field(..., description="50:50, Phone a Friend, or Double Check")
+
+class CandidateAnswerRequest(BaseModel):
+    round_id: str
+    session_id: str
+    candidate_id: str = Field(..., description="Candidate identifier: A, B, C, or D")
+    text: str = Field(..., max_length=1000)
 
 class CandidateSpeechRequest(BaseModel):
     round_id: str
     session_id: str
     candidate_id: str = Field(..., description="Candidate identifier: A, B, C, or D")
     text: str = Field(..., max_length=1000, description="Typed text from human or AI candidate")
+
+class MasterLeaderboardCreateRequest(BaseModel):
+    team_name: str
+    branch: str
+    rank: int

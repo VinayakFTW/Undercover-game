@@ -3,3 +3,4 @@
 #ignore all occurences of pycache folders
 **/*.pyc
 **/__pycache__/**/*
+undercover-game-show

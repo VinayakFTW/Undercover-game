@@ -18,7 +18,6 @@ def get_all_teams():
                 "coins": team.coins,
                 "total_score": team.total_score,
                 "raw_score": team.raw_score,
-                "lifeline_used": team.lifeline_used,
                 "bounty_triggered": team.bounty_triggered
             }
             for team in teams

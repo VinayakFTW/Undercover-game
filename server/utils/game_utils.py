@@ -4,21 +4,21 @@ def calculate_multiplier(total_room_coins: int, correct_candidate_coins: int) ->
     """Calculates the dynamic multiplier per round."""
     if correct_candidate_coins == 0:
         return 0.0
-    return round(math.sqrt(total_room_coins / correct_candidate_coins), 3)
+    return round(math.sqrt(math.sqrt(total_room_coins / correct_candidate_coins)), 3)
 
 def calculate_speed_bonus(lock_in_time: float) -> float:
     """Returns continuous scale speed bonus based on lock-in time."""
     if lock_in_time <= 5.0:
-        return 1.15
+        return 1.05
     elif lock_in_time <= 10.0:
-        return 1.12
+        return 1.04
     elif lock_in_time <= 15.0:
-        return 1.09
-    elif lock_in_time <= 20.0:
-        return 1.06
-    elif lock_in_time < 25.0:
         return 1.03
-    return 1.01
+    elif lock_in_time <= 20.0:
+        return 1.02
+    elif lock_in_time <= 25.0:
+        return 1.01
+    return 1.00
 
 def calculate_risk_bonus(max_allocation_amount: int) -> float:
     """Calculates Risk Bonus based on Round 1 single-candidate stake percentage."""

@@ -4,9 +4,9 @@ from dotenv import load_dotenv
 import os
 
 
-load_dotenv()
+load_dotenv("D:\\Work\\Code\\AIClub\\Undercover-game\\server\\.env")
 
-engine = create_engine(os.getenv("POSTGRES_URL", "sqlite:///./undercover.db"))
+engine = create_engine(os.getenv("POSTGRES_URL"))
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 BASE = declarative_base()
 

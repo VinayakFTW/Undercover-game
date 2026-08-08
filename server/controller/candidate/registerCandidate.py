@@ -17,7 +17,7 @@ def register_candidate(request: CandidateRegisterRequest):
             )
 
         new_candidate = Candidate(
-            candidate_id=request.candidate_id, name=request.name
+            candidate_id=request.candidate_id, name=request.name, ai=request.ai
         )
         db.add(new_candidate)
         db.commit()
@@ -29,5 +29,6 @@ def register_candidate(request: CandidateRegisterRequest):
             "candidate": {
                 "candidate_id": new_candidate.candidate_id,
                 "name": new_candidate.name,
+                "ai": new_candidate.ai,
             },
         }

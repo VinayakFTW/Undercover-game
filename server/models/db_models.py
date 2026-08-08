@@ -10,54 +10,69 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from server.config.db import BASE
 from server.constants.db_enums import SessionStatus
 
-# Association table for the Many-to-Many relationship between Rounds and Players
-round_players = Table(
-    "round_players",
-    BASE.metadata,
-    Column("round_id", ForeignKey("rounds.round_id"), primary_key=True),
-    Column("player_id", ForeignKey("players.player_id"), primary_key=True),
-)
+# ==========================================
+# ASSOCIATION TABLES
+# ==========================================
 
 session_candidates = Table(
     "session_candidates",
     BASE.metadata,
-    Column("session_id", ForeignKey("sessions.session_id"), primary_key=True),
-    Column("candidate_id", ForeignKey("candidates.candidate_id"), primary_key=True),
+    Column("session_id", String, ForeignKey("sessions.session_id"), primary_key=True),
+    Column("candidate_id", String, ForeignKey("candidates.candidate_id"), primary_key=True)
 )
+
+session_players = Table(
+    "session_players",
+    BASE.metadata,
+    Column("session_id", String, ForeignKey("sessions.session_id"), primary_key=True),
+    Column("player_id", String, ForeignKey("players.player_id"), primary_key=True)
+)
+
+round_players = Table(
+    "round_players",
+    BASE.metadata,
+    Column("round_id", String, ForeignKey("rounds.round_id"), primary_key=True), 
+    Column("player_id", String, ForeignKey("players.player_id"), primary_key=True)
+)
+
+
+# ==========================================
+# MODELS
+# ==========================================
 
 class Session(BASE):
     __tablename__ = "sessions"
 
     session_id: Mapped[str] = mapped_column(String, primary_key=True)
-    date: Mapped[datetime.date] = mapped_column(Date)
-    time_slot: Mapped[str] = mapped_column(String)
     status: Mapped[SessionStatus] = mapped_column(Enum(SessionStatus))
     
     final_leaderboard: Mapped[list] = mapped_column(JSON, default=list)
     reveal_order: Mapped[list] = mapped_column(JSON, default=list)
+    current_round_start_time: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime, nullable=True)
 
     # Relationships
     teams: Mapped[List["Team"]] = relationship(back_populates="session")
     rounds: Mapped[List["Round"]] = relationship(back_populates="session")
-    candidates: Mapped[List["Candidate"]] = relationship(
-        secondary=session_candidates, back_populates="sessions"
-    )
     players: Mapped[List["Player"]] = relationship(
-        secondary="round_players", viewonly=True, back_populates="rounds"
+        secondary=session_players, 
+        back_populates="sessions"
     )
-
+    candidates: Mapped[List["Candidate"]] = relationship(
+        secondary=session_candidates,
+        back_populates="sessions"
+    )
 
 class Candidate(BASE):
     __tablename__ = "candidates"
 
     candidate_id: Mapped[str] = mapped_column(String, primary_key=True)
     name: Mapped[str] = mapped_column(String)
-
+    ai: Mapped[bool] = mapped_column(Boolean, default=False)
     # Relationships
     sessions: Mapped[List["Session"]] = relationship(
-        secondary=session_candidates, back_populates="candidates"
+        secondary=session_candidates, 
+        back_populates="candidates"
     )
-
 
 class Player(BASE):
     __tablename__ = "players"
@@ -66,10 +81,15 @@ class Player(BASE):
     name: Mapped[str] = mapped_column(String)
     
     # Relationships
-    rounds: Mapped[List["Round"]] = relationship(
-        secondary=round_players, back_populates="players"
+    sessions: Mapped[List["Session"]] = relationship(
+        secondary=session_players, 
+        back_populates="players"
     )
-
+    
+    rounds: Mapped[List["Round"]] = relationship(
+        secondary=round_players, 
+        back_populates="players"
+    )
 
 class Round(BASE):
     __tablename__ = "rounds"
@@ -79,10 +99,11 @@ class Round(BASE):
     
     questions: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
     responses: Mapped[List[Dict[str, Any]]] = mapped_column(JSON, default=list)
+    candidate_answers: Mapped[Dict[str, str]] = mapped_column(JSON, default=dict)
     staking_distribution: Mapped[Dict[str, Any]] = mapped_column(JSON, default=dict)
     
-    multiplier: Mapped[float] = mapped_column(Float)
-    bounty_phrase: Mapped[str] = mapped_column(String)
+    multiplier: Mapped[float] = mapped_column(Float, default=1.0)
+    bounty_phrase: Mapped[str] = mapped_column(String, default="")
     bounty_triggered: Mapped[bool] = mapped_column(Boolean, default=False)
     triggered_by: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
@@ -90,9 +111,9 @@ class Round(BASE):
     session: Mapped["Session"] = relationship(back_populates="rounds")
     stakes: Mapped[List["Stake"]] = relationship(back_populates="round")
     players: Mapped[List["Player"]] = relationship(
-        secondary=round_players, back_populates="rounds"
+        secondary=round_players, 
+        back_populates="rounds" 
     )
-
 
 class Team(BASE):
     __tablename__ = "teams"
@@ -100,11 +121,9 @@ class Team(BASE):
     team_id: Mapped[str] = mapped_column(String, primary_key=True)
     team_name: Mapped[str] = mapped_column(String)
     branch: Mapped[str] = mapped_column(String)
-    session_id: Mapped[str] = mapped_column(ForeignKey("sessions.session_id"))
+    session_id: Mapped[Optional[str]] = mapped_column(ForeignKey("sessions.session_id"), nullable=True)
     
     coins: Mapped[int] = mapped_column(Integer, default=10000)
-    lifeline_used: Mapped[bool] = mapped_column(Boolean, default=False)
-    lifeline_type: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     current_stake: Mapped[float] = mapped_column(Float, default=0.0)
     bounty_triggered: Mapped[bool] = mapped_column(Boolean, default=False)
     
@@ -128,6 +147,7 @@ class Stake(BASE):
     team_id: Mapped[str] = mapped_column(ForeignKey("teams.team_id"))
     candidate: Mapped[str] = mapped_column(String)
     amount: Mapped[float] = mapped_column(Float)
+    lock_in_time: Mapped[float] = mapped_column(Float, default=0.0)
     timestamp: Mapped[datetime.datetime] = mapped_column(
         DateTime, server_default=func.now()
     )
@@ -143,12 +163,8 @@ class MasterLeaderboard(BASE):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     team_name: Mapped[str] = mapped_column(String)
     branch: Mapped[str] = mapped_column(String)
-    
-    total_coins: Mapped[int] = mapped_column(Integer, default=0)
-    raw_total_coins: Mapped[int] = mapped_column(Integer, default=0)
     sessions_played: Mapped[int] = mapped_column(Integer, default=0)
     highest_score: Mapped[float] = mapped_column(Float, default=0.0)
-    highest_raw_score: Mapped[float] = mapped_column(Float, default=0.0)
     rank: Mapped[int] = mapped_column(Integer)
     
     last_updated: Mapped[datetime.datetime] = mapped_column(

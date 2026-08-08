@@ -22,8 +22,6 @@ SERVER_CODES = {
     "ROUND_ALREADY_STARTED": {"code": 1021, "message": "Round has already started."},
     "ROUND_ALREADY_ENDED": {"code": 1022, "message": "Round has already ended."},
     "INSUFFICIENT_COINS": {"code": 1023, "message": "Insufficient coins for the requested operation."},
-    "LIFELINE_ALREADY_USED": {"code": 1024, "message": "Lifeline has already been used in this round."},
-    "LIFELINE_NOT_AVAILABLE": {"code": 1025, "message": "Lifeline is not available for this round."},
     "LEADERBOARD_NOT_AVAILABLE": {"code": 1026, "message": "Leaderboard is not available for this session."},
     "GLOBAL_LEADERBOARD_NOT_AVAILABLE": {"code": 1027, "message": "Global leaderboard is not available."},
 }
