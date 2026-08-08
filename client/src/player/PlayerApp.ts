@@ -275,6 +275,19 @@ export function initPlayerApp(root: HTMLElement) {
   const startPolling = () => {
     window.setInterval(async () => {
       try {
+        // Sync team's session id to detect if host added us to a session
+        try {
+          const teamRes = await fetch(`${API_BASE}/api/team/${state.teamId}`);
+          if (teamRes.ok) {
+             const teamData = await teamRes.json();
+             if (teamData.team && teamData.team.session_id) {
+                 state.sessionId = teamData.team.session_id;
+             }
+          }
+        } catch (e) {
+          console.error("Failed to sync team session", e);
+        }
+
         const res = await fetch(`${API_BASE}/api/session/${state.sessionId}/state`);
         if (res.ok) {
           const data = await res.json();

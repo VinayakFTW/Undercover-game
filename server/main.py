@@ -58,5 +58,7 @@ add_to_route("/api/host/edit_team/{team_id}", edit_team, methods=["PUT"])
 add_to_route("/api/session/create", create_session, methods=["POST"])
 add_to_route("/api/candidate/generate", generate_ai_response, methods=["POST"])
 add_to_route("/api/session/update_status", update_session, methods=["POST"])
+from server.controller.team.getTeam_controller import get_team
+add_to_route("/api/team/{team_id}", get_team, methods=["GET"])
 add_to_route("/api/session/{session_id}/state", get_session_state, methods=["GET"])
 app.include_router(speech_router)
